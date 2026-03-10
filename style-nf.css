@@ -131,13 +131,12 @@ color:#777;
   }
 
   h1 {
-    font-size: 34px;
+    font-size: 1rem;
     margin-bottom: 8px;
   }
 
   h2 {
-    font-size: 24px;
-    letter-spacing: 2px;
+    font-size: 1rem;
     margin-bottom: 28px;
   }
 
