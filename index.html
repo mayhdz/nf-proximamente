@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Website Quote Calculator</title>
+  
+</head>
+<body>
+  <div class="page">
+    <div class="headline">
+      <h1>Select your requirements to get an estimated quote Ja</h1>
+      <p>Build a site that feels custom, fast, and ready for growth.</p>
+    </div>
+
+    <div class="layout">
+      <section class="panel stagger">
+        <h2>Cotiza tu sitio web</h2>
+        <div id="base-card" class="option-card selected" role="button" aria-pressed="true" tabindex="0">
+          <div class="option-icon">OK</div>
+          <div class="option-meta">
+            <h3>Player One package</h3>
+            <span>Incluye diseño responsive, layout básico.</span>
+          </div>
+          <div class="option-price"> Desde USD $600</div>
+        </div>
+
+        <div>
+          <strong>Número de páginas:</strong>
+          <div class="counter">
+            <button type="button" id="page-minus">-</button>
+            <input id="page-count" type="number" min="1" value="5" />
+            <button type="button" id="page-plus">+</button>
+            <small>(USD $100 por página adicional)</small>
+          </div>
+        </div>
+
+        <h2>Adicionales</h2>
+        <p>Puedes elegir si deseas alguna funcionalidad extra</p>
+        <div class="features">
+          <div class="feature" data-name="E-commerce Functionality" data-price="2000">
+            <div class="feature-badge">$</div>
+            <h4>E-commerce</h4>
+            <p>Tienda online con configuración de pagos</p>
+            <strong>+ USD $1200</strong>
+          </div>
+          <div class="feature" data-name="SEO Optimization" data-price="800">
+            <div class="feature-badge">#</div>
+            <h4>SEO básico</h4>
+            <p>SEO básico y optimización de keywords</p>
+            <strong>+ $300</strong>
+          </div>
+          <div class="feature" data-name="Performance Optimization" data-price="600">
+            <div class="feature-badge">+</div>
+            <h4>Performance Optimization</h4>
+            <p>Speed and loading time improvements</p>
+            <strong>+ $600</strong>
+          </div>
+          <div class="feature" data-name="Investigation / Makeover" data-price="1200">
+            <div class="feature-badge">*</div>
+            <h4>Animaciones/Motion</h4>
+            <p>Analysis and redesign of existing site</p>
+            <strong>+ $800</strong>
+          </div>
+        </div>
+
+        <div class="estimate">
+          <div>
+            <h3>Your Estimated Quote</h3>
+            <div>Based on your selections:</div>
+            <ul id="selection-list">
+              <li>No options selected</li>
+            </ul>
+          </div>
+          <div class="total-box">
+            <p>Estimated Cost:</p>
+            <strong id="total-cost">$0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel stagger">
+        <h2>Contact us</h2>
+        <p>Discuss how we can help you reach new goals and make your business rock.</p>
+        <p class="form-note">Options and values from the calculator will be included in your form message.</p>
+        <form id="quote-form" class="form">
+          <input type="text" name="name" placeholder="Name" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <textarea name="message" placeholder="Message"></textarea>
+          <input type="hidden" name="quote_summary" id="quote-summary" value="" />
+          <input type="hidden" name="quote_total" id="quote-total" value="" />
+          <button type="submit">Send to Discuss Further</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const baseCard = document.getElementById("base-card");
+    const pageInput = document.getElementById("page-count");
+    const minusBtn = document.getElementById("page-minus");
+    const plusBtn = document.getElementById("page-plus");
+    const featureCards = Array.from(document.querySelectorAll(".feature"));
+    const listEl = document.getElementById("selection-list");
+    const totalEl = document.getElementById("total-cost");
+    const quoteSummary = document.getElementById("quote-summary");
+    const quoteTotal = document.getElementById("quote-total");
+
+    const BASE_PRICE = 1000;
+    const INCLUDED_PAGES = 5;
+    const EXTRA_PAGE_PRICE = 100;
+
+    function formatMoney(value) {
+      return "$" + value.toLocaleString("en-US");
+    }
+
+    function clampPages(value) {
+      if (Number.isNaN(value)) return INCLUDED_PAGES;
+      return Math.max(1, Math.round(value));
+    }
+
+    function computeTotal() {
+      const selections = [];
+      let total = 0;
+
+      const baseSelected = baseCard.classList.contains("selected");
+      const pages = clampPages(parseInt(pageInput.value, 10));
+      pageInput.value = pages;
+
+      if (baseSelected) {
+        total += BASE_PRICE;
+        selections.push(`Base package (${formatMoney(BASE_PRICE)})`);
+
+        if (pages > INCLUDED_PAGES) {
+          const extraPages = pages - INCLUDED_PAGES;
+          const extraCost = extraPages * EXTRA_PAGE_PRICE;
+          total += extraCost;
+          selections.push(`${extraPages} additional page(s) (${formatMoney(extraCost)})`);
+        } else {
+          selections.push(`${pages} page(s) included`);
+        }
+      } else {
+        selections.push("Base package not selected");
+      }
+
+      featureCards.forEach((card) => {
+        if (card.classList.contains("selected")) {
+          const price = parseInt(card.dataset.price, 10);
+          const name = card.dataset.name;
+          total += price;
+          selections.push(`${name} (${formatMoney(price)})`);
+        }
+      });
+
+      listEl.innerHTML = "";
+      if (selections.length === 0) {
+        listEl.innerHTML = "<li>No options selected</li>";
+      } else {
+        selections.forEach((text) => {
+          const li = document.createElement("li");
+          li.textContent = text;
+          listEl.appendChild(li);
+        });
+      }
+
+      totalEl.textContent = formatMoney(total);
+      quoteSummary.value = selections.join(" | ");
+      quoteTotal.value = formatMoney(total);
+    }
+
+    function toggleSelection(el) {
+      el.classList.toggle("selected");
+    }
+
+    baseCard.addEventListener("click", () => {
+      toggleSelection(baseCard);
+      const isSelected = baseCard.classList.contains("selected");
+      baseCard.setAttribute("aria-pressed", String(isSelected));
+      pageInput.disabled = !isSelected;
+      minusBtn.disabled = !isSelected;
+      plusBtn.disabled = !isSelected;
+      computeTotal();
+    });
+
+    baseCard.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        baseCard.click();
+      }
+    });
+
+    minusBtn.addEventListener("click", () => {
+      pageInput.value = clampPages(parseInt(pageInput.value, 10) - 1);
+      computeTotal();
+    });
+
+    plusBtn.addEventListener("click", () => {
+      pageInput.value = clampPages(parseInt(pageInput.value, 10) + 1);
+      computeTotal();
+    });
+
+    pageInput.addEventListener("input", () => {
+      pageInput.value = clampPages(parseInt(pageInput.value, 10));
+      computeTotal();
+    });
+
+    featureCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        toggleSelection(card);
+        computeTotal();
+      });
+    });
+
+    document.getElementById("quote-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      alert("Thanks! We will reach out with a detailed quote.");
+    });
+
+    computeTotal();
+  </script>
+</body>
+</html>
